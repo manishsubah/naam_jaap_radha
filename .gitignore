@@ -1,0 +1,105 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+*.swp
+*.swo
+*~
+
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/build/
+**/build/
+doc/api/
+.widget_preview/
+
+# Android build
+android/.gradle/
+android/local.properties
+android/**/captures/
+android/**/.cxx/
+android/app/debug/
+android/app/profile/
+android/app/release/
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# iOS build
+ios/Pods/
+ios/**/DerivedData/
+ios/**/.symlinks/
+ios/Flutter/ephemeral/
+ios/Flutter/Flutter.framework
+ios/Flutter/App.framework
+ios/Flutter/flutter_export_environment.sh
+ios/Flutter/Generated.xcconfig
+ios/Runner/GeneratedPluginRegistrant.*
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Web / desktop build outputs
+**/web/build/
+**/linux/flutter/ephemeral/
+**/macos/Flutter/ephemeral/
+**/windows/flutter/ephemeral/
+
+# Test & coverage output (keep test/*.dart in repo)
+/coverage/
+**/.test_coverage/
+**/lcov.info
+**/test-results/
+**/.dart_tool/test/
+
+# Secrets & credentials — never commit
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+*.key
+*.jks
+*.keystore
+key.properties
+**/secrets/
+**/*credentials*
+**/*secret*
+**/google-services.json
+**/GoogleService-Info.plist
+**/service-account*.json
+**/*.mobileprovision
+**/fastlane/report.xml
+**/fastlane/Preview.html
+**/fastlane/screenshots/
+**/fastlane/test_output/
+
+# Logs & caches
+*.log
+.buildlog/
+.history
+migrate_working_dir/
+
+# Symbolication / obfuscation maps
+app.*.symbols
+app.*.map.json
+
+# Misc
+*.class
+*.pyc
+.atom/
+.build/
+.svn/
+.swiftpm/
