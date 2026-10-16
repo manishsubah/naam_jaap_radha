@@ -2,7 +2,6 @@ import 'dart:math' as math;
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -13,7 +12,8 @@ import 'package:naam_jaap/core/widgets/devotional_background.dart';
 import 'package:naam_jaap/core/widgets/section_card.dart';
 import 'package:naam_jaap/data/models/jaap_entry.dart';
 import 'package:naam_jaap/data/providers/providers.dart';
-import 'package:naam_jaap/features/jaap/presentation/widgets/manual_entry_sheet.dart';
+import 'package:naam_jaap/features/jaap_log/presentation/jaap_log_view.dart';
+import 'package:naam_jaap/features/jaap_log/presentation/widgets/jaap_record_sheet.dart';
 
 class HistoryScreen extends ConsumerStatefulWidget {
   const HistoryScreen({super.key});
@@ -22,7 +22,10 @@ class HistoryScreen extends ConsumerStatefulWidget {
   ConsumerState<HistoryScreen> createState() => _HistoryScreenState();
 }
 
+enum _HistoryView { calendar, log }
+
 class _HistoryScreenState extends ConsumerState<HistoryScreen> {
+  _HistoryView _view = _HistoryView.log;
   DateTime _focused = DateTime.now();
   DateTime _selected = dayOnly(DateTime.now());
 
@@ -37,13 +40,38 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
       ..sort((a, b) => b.count.compareTo(a.count));
     final numbers = NumberFormat.decimalPattern('en_IN');
 
+    final header = [
+      Center(child: Text('Sadhana History', style: theme.appBarTheme.titleTextStyle)),
+      const SizedBox(height: 16),
+      SegmentedButton<_HistoryView>(
+        segments: const [
+          ButtonSegment(
+            value: _HistoryView.log,
+            icon: Icon(Icons.view_agenda_outlined),
+            label: Text('Log'),
+          ),
+          ButtonSegment(
+            value: _HistoryView.calendar,
+            icon: Icon(Icons.calendar_month_outlined),
+            label: Text('Calendar'),
+          ),
+        ],
+        selected: {_view},
+        onSelectionChanged: (v) => setState(() => _view = v.first),
+      ),
+      const SizedBox(height: 16),
+    ];
+
+    if (_view == _HistoryView.log) {
+      return DevotionalBackground(child: SafeArea(child: JaapLogView(header: header)));
+    }
+
     return DevotionalBackground(
       child: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
           children: [
-            Center(child: Text('Sadhana History', style: theme.appBarTheme.titleTextStyle)),
-            const SizedBox(height: 16),
+            ...header,
             SectionCard(
               padding: const EdgeInsets.fromLTRB(8, 8, 8, 12),
               child: TableCalendar<void>(
@@ -78,7 +106,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
               trailing: IconButton(
                 tooltip: 'Add count for this day',
                 icon: const Icon(Icons.add_circle_outline_rounded),
-                onPressed: () => showManualEntrySheet(context, date: _selected),
+                onPressed: () => showJaapRecordSheet(context, date: _selected),
               ),
               child: dayEntries.isEmpty
                   ? Text('No jaap recorded on this day.', style: theme.textTheme.bodyMedium)
@@ -161,33 +189,6 @@ class _EntryTile extends ConsumerWidget {
 
   final JaapEntry entry;
 
-  Future<void> _edit(BuildContext context, WidgetRef ref) async {
-    final controller = TextEditingController(text: '${entry.count}');
-    final value = await showDialog<int>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Edit count'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          keyboardType: TextInputType.number,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, int.tryParse(controller.text) ?? 0),
-            child: const Text('Save'),
-          ),
-        ],
-      ),
-    );
-    controller.dispose();
-    if (value != null) {
-      await ref.read(jaapEntriesProvider.notifier).setCount(entry.dateKey, entry.naamId, value);
-    }
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final naam = ref.watch(naamByIdProvider(entry.naamId));
@@ -203,21 +204,11 @@ class _EntryTile extends ConsumerWidget {
       ),
       title: Text(naam?.name ?? 'Removed naam'),
       subtitle: Text('${entry.count} jaap  •  ${entry.count ~/ malaSize} malas'),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          IconButton(
-            tooltip: 'Edit',
-            icon: const Icon(Icons.edit_outlined),
-            onPressed: () => _edit(context, ref),
-          ),
-          IconButton(
-            tooltip: 'Delete',
-            icon: const Icon(Icons.delete_outline_rounded),
-            onPressed: () =>
-                ref.read(jaapEntriesProvider.notifier).setCount(entry.dateKey, entry.naamId, 0),
-          ),
-        ],
+      trailing: const Icon(Icons.edit_outlined),
+      onTap: () => showJaapRecordSheet(
+        context,
+        date: parseDateKey(entry.dateKey),
+        naamId: entry.naamId,
       ),
     );
   }

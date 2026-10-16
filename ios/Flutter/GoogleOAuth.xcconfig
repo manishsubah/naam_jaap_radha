@@ -1,0 +1,6 @@
+// Google sign-in redirect scheme for the iOS OAuth client.
+// Set the real value in GoogleOAuth.local.xcconfig (gitignored), e.g.
+//   GOOGLE_REVERSED_CLIENT_ID = com.googleusercontent.apps.1234-abcd
+// See docs/google_backup_setup.md.
+GOOGLE_REVERSED_CLIENT_ID = com.googleusercontent.apps.not-configured
+#include? "GoogleOAuth.local.xcconfig"

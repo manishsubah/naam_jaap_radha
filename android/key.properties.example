@@ -1,0 +1,7 @@
+# Copy to android/key.properties (gitignored) and fill in. Keep the keystore
+# and these passwords out of git and backed up somewhere safe: losing them
+# means you can't ship updates.
+storeFile=/Users/you/keys/jaapmala-upload.jks
+storePassword=change-me
+keyAlias=upload
+keyPassword=change-me

@@ -6,21 +6,38 @@ import 'package:naam_jaap/data/providers/repository_providers.dart';
 
 class JaapEntriesNotifier extends Notifier<List<JaapEntry>> {
   @override
-  List<JaapEntry> build() => ref.read(jaapRepositoryProvider).getAll();
+  List<JaapEntry> build() =>
+      ref.read(jaapRepositoryProvider).getAll().where((e) => !e.deleted).toList();
+
+  /// Re-reads entries from storage, after a sync has written merged data.
+  void reload() => state = build();
+
+  JaapEntry? entryFor(String key, String naamId) =>
+      state.where((e) => e.dateKey == key && e.naamId == naamId).firstOrNull;
 
   Future<void> addCount(String naamId, int delta, {DateTime? date}) async {
     final key = dateKey(date ?? DateTime.now());
-    final existing = state.where((e) => e.dateKey == key && e.naamId == naamId).firstOrNull;
-    await setCount(key, naamId, (existing?.count ?? 0) + delta);
+    await setCount(key, naamId, (entryFor(key, naamId)?.count ?? 0) + delta);
   }
 
+  /// Sets the exact count for a day and naam. A count of zero or less removes
+  /// the record (stored as a tombstone so the removal syncs).
   Future<void> setCount(String key, String naamId, int count) async {
     final id = JaapEntry.idFor(key, naamId);
     final repo = ref.read(jaapRepositoryProvider);
     final others = state.where((e) => e.id != id).toList();
+    final existed = others.length != state.length;
     if (count <= 0) {
       state = others;
-      await repo.delete(id);
+      if (existed) {
+        await repo.save(JaapEntry(
+          dateKey: key,
+          naamId: naamId,
+          count: 0,
+          updatedAt: DateTime.now(),
+          deleted: true,
+        ));
+      }
       return;
     }
     final entry = JaapEntry(dateKey: key, naamId: naamId, count: count, updatedAt: DateTime.now());

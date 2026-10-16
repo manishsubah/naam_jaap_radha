@@ -18,7 +18,7 @@ class HiveNaamRepository implements NaamRepository {
   Future<void> save(Naam naam) => _box.put(naam.id, naam.toMap());
 
   @override
-  Future<void> delete(String id) => _box.delete(id);
+  Future<void> saveAll(Iterable<Naam> naams) => _box.putAll({for (final n in naams) n.id: n.toMap()});
 }
 
 class HiveJaapRepository implements JaapRepository {
@@ -33,7 +33,8 @@ class HiveJaapRepository implements JaapRepository {
   Future<void> save(JaapEntry entry) => _box.put(entry.id, entry.toMap());
 
   @override
-  Future<void> delete(String id) => _box.delete(id);
+  Future<void> saveAll(Iterable<JaapEntry> entries) =>
+      _box.putAll({for (final e in entries) e.id: e.toMap()});
 }
 
 class HiveThoughtRepository implements ThoughtRepository {

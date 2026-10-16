@@ -10,7 +10,7 @@ import 'package:naam_jaap/data/providers/providers.dart';
 import 'package:naam_jaap/core/services/haptic_sound_service.dart';
 import 'package:naam_jaap/features/jaap/presentation/widgets/mala_painter.dart';
 import 'package:naam_jaap/features/jaap/domain/mala_progress.dart';
-import 'package:naam_jaap/features/jaap/presentation/widgets/manual_entry_sheet.dart';
+import 'package:naam_jaap/features/jaap_log/presentation/widgets/jaap_record_sheet.dart';
 import 'package:naam_jaap/features/jaap/presentation/widgets/petal_burst.dart';
 
 class JaapScreen extends ConsumerStatefulWidget {
@@ -87,7 +87,7 @@ class _JaapScreenState extends ConsumerState<JaapScreen> with SingleTickerProvid
                   IconButton(
                     tooltip: 'Add count manually',
                     icon: const Icon(Icons.edit_note_rounded),
-                    onPressed: () => showManualEntrySheet(context),
+                    onPressed: () => showJaapRecordSheet(context, naamId: naam.id),
                   ),
                 ],
               ),
@@ -140,7 +140,7 @@ class _JaapScreenState extends ConsumerState<JaapScreen> with SingleTickerProvid
                   ),
                   IconButton.filledTonal(
                     tooltip: 'Add count manually',
-                    onPressed: () => showManualEntrySheet(context),
+                    onPressed: () => showJaapRecordSheet(context, naamId: naam.id),
                     icon: const Icon(Icons.add_rounded),
                   ),
                 ],

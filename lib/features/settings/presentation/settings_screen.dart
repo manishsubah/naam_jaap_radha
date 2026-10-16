@@ -9,6 +9,7 @@ import 'package:naam_jaap/core/widgets/section_card.dart';
 import 'package:naam_jaap/data/models/app_settings.dart';
 import 'package:naam_jaap/data/models/naam.dart';
 import 'package:naam_jaap/data/providers/providers.dart';
+import 'package:naam_jaap/features/settings/presentation/widgets/google_backup_card.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -75,6 +76,8 @@ class SettingsScreen extends ConsumerWidget {
                 ],
               ),
             ),
+            const SizedBox(height: 16),
+            const GoogleBackupCard(),
             const SizedBox(height: 16),
             const SectionCard(title: 'My naams', child: _NaamList()),
             const SizedBox(height: 16),

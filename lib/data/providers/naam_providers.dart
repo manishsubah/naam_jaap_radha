@@ -9,10 +9,10 @@ const _uuid = Uuid();
 
 class NaamsNotifier extends Notifier<List<Naam>> {
   @override
-  List<Naam> build() {
-    final saved = ref.read(naamRepositoryProvider).getAll();
-    return saved.isEmpty ? Naam.defaults : saved;
-  }
+  List<Naam> build() => Naam.ordered(ref.read(naamRepositoryProvider).getAll());
+
+  /// Re-reads naams from storage, after a sync has written merged data.
+  void reload() => state = build();
 
   Future<Naam> add({required String name, String? script, String? greeting}) async {
     final trimmed = name.trim();
@@ -22,6 +22,7 @@ class NaamsNotifier extends Notifier<List<Naam>> {
       script: (script?.trim().isNotEmpty ?? false) ? script!.trim() : trimmed,
       greeting: (greeting?.trim().isNotEmpty ?? false) ? greeting!.trim() : 'Jai $trimmed',
       isCustom: true,
+      updatedAt: DateTime.now(),
     );
     state = [...state, naam];
     await ref.read(naamRepositoryProvider).save(naam);
@@ -29,8 +30,10 @@ class NaamsNotifier extends Notifier<List<Naam>> {
   }
 
   Future<void> remove(String id) async {
+    final naam = state.where((n) => n.id == id).firstOrNull;
+    if (naam == null) return;
     state = state.where((n) => n.id != id).toList();
-    await ref.read(naamRepositoryProvider).delete(id);
+    await ref.read(naamRepositoryProvider).save(naam.asDeleted(DateTime.now()));
     final settings = ref.read(settingsProvider);
     if (settings.selectedNaamId == id && state.isNotEmpty) {
       await ref.read(settingsProvider.notifier).change((s) => s.copyWith(selectedNaamId: state.first.id));

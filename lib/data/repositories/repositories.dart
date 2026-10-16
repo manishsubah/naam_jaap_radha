@@ -3,16 +3,20 @@ import 'package:naam_jaap/data/models/jaap_entry.dart';
 import 'package:naam_jaap/data/models/naam.dart';
 import 'package:naam_jaap/data/models/thought.dart';
 
+/// Returns every naam, including removed ones (`deleted == true`), so they can
+/// be synced. Callers that show naams filter the tombstones out.
 abstract interface class NaamRepository {
   List<Naam> getAll();
   Future<void> save(Naam naam);
-  Future<void> delete(String id);
+  Future<void> saveAll(Iterable<Naam> naams);
 }
 
+/// Returns every entry, including removed ones (`deleted == true`), so they
+/// can be synced. Callers that show entries filter the tombstones out.
 abstract interface class JaapRepository {
   List<JaapEntry> getAll();
   Future<void> save(JaapEntry entry);
-  Future<void> delete(String id);
+  Future<void> saveAll(Iterable<JaapEntry> entries);
 }
 
 abstract interface class ThoughtRepository {

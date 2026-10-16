@@ -103,3 +103,8 @@ app.*.map.json
 .build/
 .svn/
 .swiftpm/
+
+# Google OAuth client IDs (per developer)
+config/google_oauth.json
+ios/Flutter/GoogleOAuth.local.xcconfig
+*.p8
