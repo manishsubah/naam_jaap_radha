@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'app/app.dart';
-import 'data/repositories/local/local_storage.dart';
+import 'package:naam_jaap/app/app.dart';
+import 'package:naam_jaap/data/local/local_storage.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

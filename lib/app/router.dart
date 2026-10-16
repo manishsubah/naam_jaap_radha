@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../features/history/history_screen.dart';
-import '../features/home/home_screen.dart';
-import '../features/jaap/jaap_screen.dart';
-import '../features/settings/settings_screen.dart';
-import '../features/thoughts/thought_editor_screen.dart';
-import '../features/thoughts/thoughts_screen.dart';
-import 'app_shell.dart';
+import 'package:naam_jaap/features/history/presentation/history_screen.dart';
+import 'package:naam_jaap/features/home/presentation/home_screen.dart';
+import 'package:naam_jaap/features/jaap/presentation/jaap_screen.dart';
+import 'package:naam_jaap/features/settings/presentation/settings_screen.dart';
+import 'package:naam_jaap/features/thoughts/presentation/thought_editor_screen.dart';
+import 'package:naam_jaap/features/thoughts/presentation/thoughts_screen.dart';
+import 'package:naam_jaap/app/app_shell.dart';
 
 abstract final class AppRoutes {
   static const home = '/home';

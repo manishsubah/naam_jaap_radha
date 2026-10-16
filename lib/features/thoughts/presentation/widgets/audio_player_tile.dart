@@ -1,9 +1,10 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 
-import '../../core/theme/app_colors.dart';
+import 'package:naam_jaap/core/theme/app_colors.dart';
 
 String formatDuration(Duration d) {
   final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
@@ -64,7 +65,7 @@ class _AudioPlayerTileState extends State<AudioPlayerTile> {
       await player.pause();
     } else {
       if (player.processingState == ProcessingState.completed) await player.seek(Duration.zero);
-      player.play();
+      unawaited(player.play());
     }
   }
 

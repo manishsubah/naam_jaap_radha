@@ -5,13 +5,13 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import '../../core/theme/app_colors.dart';
-import '../../core/widgets/devotional_background.dart';
-import '../../data/models/thought.dart';
-import '../../data/providers.dart';
-import '../../services/audio_recorder_service.dart';
-import '../../services/speech_service.dart';
-import 'audio_player_tile.dart';
+import 'package:naam_jaap/core/theme/app_colors.dart';
+import 'package:naam_jaap/core/widgets/devotional_background.dart';
+import 'package:naam_jaap/data/models/thought.dart';
+import 'package:naam_jaap/data/providers/providers.dart';
+import 'package:naam_jaap/core/services/audio_recorder_service.dart';
+import 'package:naam_jaap/core/services/speech_service.dart';
+import 'package:naam_jaap/features/thoughts/presentation/widgets/audio_player_tile.dart';
 
 class ThoughtEditorScreen extends ConsumerStatefulWidget {
   const ThoughtEditorScreen({super.key, this.thoughtId});

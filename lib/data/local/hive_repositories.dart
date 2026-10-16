@@ -1,10 +1,10 @@
 import 'package:hive_ce/hive.dart';
 
-import '../../models/app_settings.dart';
-import '../../models/jaap_entry.dart';
-import '../../models/naam.dart';
-import '../../models/thought.dart';
-import '../repositories.dart';
+import 'package:naam_jaap/data/models/app_settings.dart';
+import 'package:naam_jaap/data/models/jaap_entry.dart';
+import 'package:naam_jaap/data/models/naam.dart';
+import 'package:naam_jaap/data/models/thought.dart';
+import 'package:naam_jaap/data/repositories/repositories.dart';
 
 class HiveNaamRepository implements NaamRepository {
   HiveNaamRepository(this._box);

@@ -4,14 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
-import '../../app/router.dart';
-import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_theme.dart';
-import '../../core/widgets/devotional_background.dart';
-import '../../core/widgets/diya_glow.dart';
-import '../../core/widgets/goal_ring.dart';
-import '../../core/widgets/section_card.dart';
-import '../../data/providers.dart';
+import 'package:naam_jaap/app/router.dart';
+import 'package:naam_jaap/core/theme/app_colors.dart';
+import 'package:naam_jaap/core/theme/app_theme.dart';
+import 'package:naam_jaap/core/widgets/devotional_background.dart';
+import 'package:naam_jaap/core/widgets/diya_glow.dart';
+import 'package:naam_jaap/core/widgets/goal_ring.dart';
+import 'package:naam_jaap/core/widgets/section_card.dart';
+import 'package:naam_jaap/data/providers/providers.dart';
 
 const _vachans = [
   'Naam is the boat that carries us across the ocean of life.',

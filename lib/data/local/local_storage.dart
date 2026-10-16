@@ -1,9 +1,9 @@
 import 'package:flutter_riverpod/misc.dart';
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 
-import '../../models/naam.dart';
-import '../../providers.dart';
-import 'hive_repositories.dart';
+import 'package:naam_jaap/data/models/naam.dart';
+import 'package:naam_jaap/data/providers/repository_providers.dart';
+import 'package:naam_jaap/data/local/hive_repositories.dart';
 
 abstract final class LocalStorage {
   static Future<List<Override>> open() async {

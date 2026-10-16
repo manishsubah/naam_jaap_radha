@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import '../../core/theme/app_colors.dart';
+import 'package:naam_jaap/core/theme/app_colors.dart';
 
 class PetalBurst extends StatefulWidget {
   const PetalBurst({super.key, required this.trigger});

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_theme.dart';
+import 'package:naam_jaap/core/theme/app_theme.dart';
 
 class SectionCard extends StatelessWidget {
   const SectionCard({

@@ -7,13 +7,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 
-import '../../core/theme/app_colors.dart';
-import '../../core/utils/date_keys.dart';
-import '../../core/widgets/devotional_background.dart';
-import '../../core/widgets/section_card.dart';
-import '../../data/models/jaap_entry.dart';
-import '../../data/providers.dart';
-import '../jaap/manual_entry_sheet.dart';
+import 'package:naam_jaap/core/theme/app_colors.dart';
+import 'package:naam_jaap/core/utils/date_keys.dart';
+import 'package:naam_jaap/core/widgets/devotional_background.dart';
+import 'package:naam_jaap/core/widgets/section_card.dart';
+import 'package:naam_jaap/data/models/jaap_entry.dart';
+import 'package:naam_jaap/data/providers/providers.dart';
+import 'package:naam_jaap/features/jaap/presentation/widgets/manual_entry_sheet.dart';
 
 class HistoryScreen extends ConsumerStatefulWidget {
   const HistoryScreen({super.key});

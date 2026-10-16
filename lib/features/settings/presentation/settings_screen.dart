@@ -3,12 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import '../../core/theme/app_colors.dart';
-import '../../core/widgets/devotional_background.dart';
-import '../../core/widgets/section_card.dart';
-import '../../data/models/app_settings.dart';
-import '../../data/models/naam.dart';
-import '../../data/providers.dart';
+import 'package:naam_jaap/core/theme/app_colors.dart';
+import 'package:naam_jaap/core/widgets/devotional_background.dart';
+import 'package:naam_jaap/core/widgets/section_card.dart';
+import 'package:naam_jaap/data/models/app_settings.dart';
+import 'package:naam_jaap/data/models/naam.dart';
+import 'package:naam_jaap/data/providers/providers.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});

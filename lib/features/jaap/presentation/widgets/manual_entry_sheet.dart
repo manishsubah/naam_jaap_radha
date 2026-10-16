@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import '../../data/providers.dart';
+import 'package:naam_jaap/data/providers/providers.dart';
 
 Future<void> showManualEntrySheet(BuildContext context, {DateTime? date}) {
   return showModalBottomSheet<void>(

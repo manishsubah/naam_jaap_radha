@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import '../theme/app_colors.dart';
+import 'package:naam_jaap/core/theme/app_colors.dart';
 
 class GoalRing extends StatelessWidget {
   const GoalRing({

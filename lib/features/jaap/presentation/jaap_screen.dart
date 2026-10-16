@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_theme.dart';
-import '../../core/widgets/devotional_background.dart';
-import '../../data/models/naam.dart';
-import '../../data/providers.dart';
-import '../../services/haptic_sound_service.dart';
-import 'mala_painter.dart';
-import 'mala_progress.dart';
-import 'manual_entry_sheet.dart';
-import 'petal_burst.dart';
+import 'package:naam_jaap/core/theme/app_colors.dart';
+import 'package:naam_jaap/core/theme/app_theme.dart';
+import 'package:naam_jaap/core/widgets/devotional_background.dart';
+import 'package:naam_jaap/data/models/naam.dart';
+import 'package:naam_jaap/data/providers/providers.dart';
+import 'package:naam_jaap/core/services/haptic_sound_service.dart';
+import 'package:naam_jaap/features/jaap/presentation/widgets/mala_painter.dart';
+import 'package:naam_jaap/features/jaap/domain/mala_progress.dart';
+import 'package:naam_jaap/features/jaap/presentation/widgets/manual_entry_sheet.dart';
+import 'package:naam_jaap/features/jaap/presentation/widgets/petal_burst.dart';
 
 class JaapScreen extends ConsumerStatefulWidget {
   const JaapScreen({super.key});

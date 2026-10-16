@@ -4,14 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
-import '../../app/router.dart';
-import '../../core/theme/app_colors.dart';
-import '../../core/widgets/devotional_background.dart';
-import '../../core/widgets/diya_glow.dart';
-import '../../core/widgets/section_card.dart';
-import '../../data/models/thought.dart';
-import '../../data/providers.dart';
-import 'audio_player_tile.dart';
+import 'package:naam_jaap/app/router.dart';
+import 'package:naam_jaap/core/theme/app_colors.dart';
+import 'package:naam_jaap/core/widgets/devotional_background.dart';
+import 'package:naam_jaap/core/widgets/diya_glow.dart';
+import 'package:naam_jaap/core/widgets/section_card.dart';
+import 'package:naam_jaap/data/models/thought.dart';
+import 'package:naam_jaap/data/providers/providers.dart';
+import 'package:naam_jaap/features/thoughts/presentation/widgets/audio_player_tile.dart';
 
 class ThoughtsScreen extends ConsumerWidget {
   const ThoughtsScreen({super.key});

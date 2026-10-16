@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
@@ -21,7 +23,7 @@ class HapticSoundService {
         await player.setAsset('assets/sounds/bell.wav');
       }
       await player.seek(Duration.zero);
-      player.play();
+      unawaited(player.play());
     } catch (_) {}
   }
 

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../core/theme/app_theme.dart';
-import '../data/providers.dart';
-import 'router.dart';
+import 'package:naam_jaap/core/theme/app_theme.dart';
+import 'package:naam_jaap/data/providers/providers.dart';
+import 'package:naam_jaap/app/router.dart';
 
 class JaapMalaApp extends ConsumerWidget {
   const JaapMalaApp({super.key});
