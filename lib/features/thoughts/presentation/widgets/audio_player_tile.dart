@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 
 import 'package:naam_jaap/core/theme/app_colors.dart';
+import 'package:naam_jaap/l10n/l10n.dart';
 
 String formatDuration(Duration d) {
   final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
@@ -100,7 +101,7 @@ class _AudioPlayerTileState extends State<AudioPlayerTile> {
             ),
           Expanded(
             child: _missing
-                ? Text('Voice note unavailable', style: theme.textTheme.bodySmall)
+                ? Text(context.l10n.voiceNoteUnavailable, style: theme.textTheme.bodySmall)
                 : StreamBuilder<Duration>(
                     stream: player?.positionStream,
                     builder: (context, snapshot) {
@@ -124,7 +125,7 @@ class _AudioPlayerTileState extends State<AudioPlayerTile> {
                           const SizedBox(height: 4),
                           Text(
                             player == null
-                                ? 'Voice note'
+                                ? context.l10n.voiceNote
                                 : '${formatDuration(position)} / ${formatDuration(total)}',
                             style: theme.textTheme.labelSmall,
                           ),
@@ -135,7 +136,7 @@ class _AudioPlayerTileState extends State<AudioPlayerTile> {
           ),
           if (widget.onDelete != null)
             IconButton(
-              tooltip: 'Remove voice note',
+              tooltip: context.l10n.voiceNoteRemove,
               onPressed: widget.onDelete,
               icon: const Icon(Icons.close_rounded),
             ),

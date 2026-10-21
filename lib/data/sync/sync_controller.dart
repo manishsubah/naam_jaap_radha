@@ -26,21 +26,25 @@ enum SyncStatus {
   error,
 }
 
+/// Why the last sync failed. The UI turns this into a message in the app's
+/// language.
+enum SyncError { signIn, driveUnreachable, unreadableBackup, unknown }
+
 class SyncState {
-  const SyncState(this.status, {this.email, this.lastSyncedAt, this.message});
+  const SyncState(this.status, {this.email, this.lastSyncedAt, this.error});
 
   final SyncStatus status;
   final String? email;
   final DateTime? lastSyncedAt;
-  final String? message;
+  final SyncError? error;
 
   bool get isSignedIn => email != null;
 
-  SyncState copyWith({SyncStatus? status, DateTime? lastSyncedAt, String? message}) => SyncState(
+  SyncState copyWith({SyncStatus? status, DateTime? lastSyncedAt, SyncError? error}) => SyncState(
         status ?? this.status,
         email: email,
         lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt,
-        message: message,
+        error: error,
       );
 }
 
@@ -107,10 +111,10 @@ class SyncController extends Notifier<SyncState> {
       final canceled = e.code == GoogleSignInExceptionCode.canceled;
       state = SyncState(
         canceled ? SyncStatus.signedOut : SyncStatus.error,
-        message: canceled ? null : "Couldn't sign in to Google. Try again.",
+        error: canceled ? null : SyncError.signIn,
       );
     } catch (_) {
-      state = const SyncState(SyncStatus.error, message: "Couldn't sign in to Google. Try again.");
+      state = const SyncState(SyncStatus.error, error: SyncError.signIn);
     }
   }
 
@@ -159,13 +163,13 @@ class SyncController extends Notifier<SyncState> {
     } on DetailedApiRequestError catch (e) {
       state = e.status == 401 || e.status == 403
           ? state.copyWith(status: SyncStatus.needsReconnect)
-          : state.copyWith(status: SyncStatus.error, message: "Couldn't reach Google Drive.");
-    } on FormatException catch (e) {
-      state = state.copyWith(status: SyncStatus.error, message: e.message);
+          : state.copyWith(status: SyncStatus.error, error: SyncError.driveUnreachable);
+    } on FormatException {
+      state = state.copyWith(status: SyncStatus.error, error: SyncError.unreadableBackup);
     } catch (_) {
       state = state.copyWith(
         status: SyncStatus.error,
-        message: "Couldn't sync. Your records are safe on this device.",
+        error: SyncError.unknown,
       );
     } finally {
       _running = false;

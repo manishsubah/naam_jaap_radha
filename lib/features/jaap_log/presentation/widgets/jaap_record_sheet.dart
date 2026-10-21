@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
 import 'package:naam_jaap/core/theme/app_colors.dart';
 import 'package:naam_jaap/core/utils/date_keys.dart';
 import 'package:naam_jaap/data/providers/providers.dart';
 import 'package:naam_jaap/features/jaap_log/domain/ledger.dart';
+import 'package:naam_jaap/l10n/l10n.dart';
 
 /// Opens the form to add or correct the jaap count for one day and naam.
 ///
@@ -45,8 +45,8 @@ class _JaapRecordSheetState extends ConsumerState<JaapRecordSheet> {
   /// chosen so the form doesn't change mode while it closes after a save.
   int? _existing;
 
-  static const _quickAdds = [11, 21, 108, 1008];
-  final _numbers = NumberFormat.decimalPattern('en_IN');
+  /// Extra count chanted elsewhere (another counter, a mala) to add on top.
+  final _addMore = TextEditingController();
 
   @override
   void initState() {
@@ -57,6 +57,7 @@ class _JaapRecordSheetState extends ConsumerState<JaapRecordSheet> {
   @override
   void dispose() {
     _count.dispose();
+    _addMore.dispose();
     super.dispose();
   }
 
@@ -81,17 +82,23 @@ class _JaapRecordSheetState extends ConsumerState<JaapRecordSheet> {
     }
   }
 
-  void _quickAdd(int amount) {
+  void _addToCount() {
+    final amount = int.tryParse(_addMore.text.trim()) ?? 0;
+    if (amount <= 0) return;
     final current = int.tryParse(_count.text) ?? 0;
     final next = (current + amount).clamp(0, JaapRecordSheet.maxCount);
-    setState(() => _count.text = '$next');
+    setState(() {
+      _count.text = '$next';
+      _addMore.clear();
+    });
   }
 
   String? _validateCount(String? value) {
     final count = int.tryParse(value?.trim() ?? '');
-    if (count == null || count <= 0) return 'Enter how many times you chanted';
+    final l10n = context.l10n;
+    if (count == null || count <= 0) return l10n.recordCountRequired;
     if (count > JaapRecordSheet.maxCount) {
-      return 'That is more than ${_numbers.format(JaapRecordSheet.maxCount)}';
+      return l10n.recordCountTooLarge(l10n.numbers.format(JaapRecordSheet.maxCount));
     }
     return null;
   }
@@ -106,14 +113,15 @@ class _JaapRecordSheetState extends ConsumerState<JaapRecordSheet> {
   }
 
   Future<void> _delete() async {
+    final l10n = context.l10n;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete this record?'),
-        content: const Text('The count for this day will be removed.'),
+        title: Text(l10n.recordDeleteTitle),
+        content: Text(l10n.recordDeleteBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Delete')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l10n.commonCancel)),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(l10n.commonDelete)),
         ],
       ),
     );
@@ -125,6 +133,8 @@ class _JaapRecordSheetState extends ConsumerState<JaapRecordSheet> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
+    final numbers = l10n.numbers;
     final naams = ref.watch(naamsProvider);
     final entries = ref.watch(jaapEntriesProvider);
     final existing = _existing;
@@ -141,13 +151,13 @@ class _JaapRecordSheetState extends ConsumerState<JaapRecordSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(existing == null ? 'Add jaap record' : 'Update jaap record',
+              Text(existing == null ? l10n.recordAddTitle : l10n.recordUpdateTitle,
                   style: theme.textTheme.titleLarge),
               const SizedBox(height: 4),
               Text(
                 existing == null
-                    ? 'Record how many times you chanted on a day.'
-                    : 'This day already has ${_numbers.format(existing)}. Saving replaces it.',
+                    ? l10n.recordAddSubtitle
+                    : l10n.recordUpdateSubtitle(numbers.format(existing)),
                 style: theme.textTheme.bodySmall,
               ),
               const SizedBox(height: 20),
@@ -156,20 +166,20 @@ class _JaapRecordSheetState extends ConsumerState<JaapRecordSheet> {
                 borderRadius: BorderRadius.circular(12),
                 onTap: _pickDate,
                 child: InputDecorator(
-                  decoration: const InputDecoration(
-                    labelText: 'Date',
-                    suffixIcon: Icon(Icons.event_rounded),
+                  decoration: InputDecoration(
+                    labelText: l10n.recordDate,
+                    suffixIcon: const Icon(Icons.event_rounded),
                   ),
-                  child: Text(DateFormat('EEEE, d MMM yyyy').format(_date)),
+                  child: Text(l10n.formatDate('EEEE, d MMM yyyy', _date)),
                 ),
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 key: const Key('record-naam'),
                 initialValue: _naamId,
-                decoration: const InputDecoration(labelText: 'Jaap name'),
+                decoration: InputDecoration(labelText: l10n.jaapName),
                 items: [
-                  for (final n in naams) DropdownMenuItem(value: n.id, child: Text(n.name)),
+                  for (final n in naams) DropdownMenuItem(value: n.id, child: Text(l10n.naamName(n))),
                 ],
                 onChanged: (v) => setState(() {
                   _naamId = v ?? _naamId;
@@ -186,16 +196,39 @@ class _JaapRecordSheetState extends ConsumerState<JaapRecordSheet> {
                   FilteringTextInputFormatter.digitsOnly,
                   LengthLimitingTextInputFormatter(6),
                 ],
-                decoration: const InputDecoration(labelText: 'Daily count', hintText: '108'),
+                decoration: InputDecoration(labelText: l10n.todaysCount, hintText: '108'),
                 validator: _validateCount,
                 onChanged: (_) => setState(() {}),
               ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
+              const SizedBox(height: 12),
+              Row(
                 children: [
-                  for (final q in _quickAdds)
-                    ActionChip(label: Text('+$q'), onPressed: () => _quickAdd(q)),
+                  Expanded(
+                    child: TextField(
+                      key: const Key('record-add-more'),
+                      controller: _addMore,
+                      keyboardType: TextInputType.number,
+                      textInputAction: TextInputAction.done,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(6),
+                      ],
+                      decoration: InputDecoration(
+                        labelText: l10n.recordAddMore,
+                        hintText: l10n.recordAddMoreHint,
+                        isDense: true,
+                      ),
+                      onChanged: (_) => setState(() {}),
+                      onSubmitted: (_) => _addToCount(),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  IconButton.filled(
+                    key: const Key('record-add-more-button'),
+                    tooltip: l10n.recordAddMoreTooltip,
+                    onPressed: (int.tryParse(_addMore.text) ?? 0) > 0 ? _addToCount : null,
+                    icon: const Icon(Icons.add_rounded),
+                  ),
                 ],
               ),
               const SizedBox(height: 12),
@@ -207,9 +240,9 @@ class _JaapRecordSheetState extends ConsumerState<JaapRecordSheet> {
                 ),
                 child: Row(
                   children: [
-                    Expanded(child: Text('Total count up to this day', style: theme.textTheme.bodyMedium)),
+                    Expanded(child: Text(l10n.recordTotalUpTo, style: theme.textTheme.bodyMedium)),
                     Text(
-                      _numbers.format(runningTotal),
+                      numbers.format(runningTotal),
                       key: const Key('record-total'),
                       style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
                     ),
@@ -220,14 +253,14 @@ class _JaapRecordSheetState extends ConsumerState<JaapRecordSheet> {
               FilledButton.icon(
                 onPressed: _saving ? null : _save,
                 icon: const Icon(Icons.check_rounded),
-                label: Text(existing == null ? 'Save record' : 'Update record'),
+                label: Text(existing == null ? l10n.recordSave : l10n.recordUpdate),
               ),
               if (existing != null) ...[
                 const SizedBox(height: 8),
                 TextButton.icon(
                   onPressed: _saving ? null : _delete,
                   icon: const Icon(Icons.delete_outline_rounded),
-                  label: const Text('Delete record'),
+                  label: Text(l10n.recordDelete),
                   style: TextButton.styleFrom(foregroundColor: theme.colorScheme.error),
                 ),
               ],

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 
 import 'package:naam_jaap/app/router.dart';
 import 'package:naam_jaap/core/theme/app_colors.dart';
@@ -12,6 +11,7 @@ import 'package:naam_jaap/core/widgets/section_card.dart';
 import 'package:naam_jaap/data/models/thought.dart';
 import 'package:naam_jaap/data/providers/providers.dart';
 import 'package:naam_jaap/features/thoughts/presentation/widgets/audio_player_tile.dart';
+import 'package:naam_jaap/l10n/l10n.dart';
 
 class ThoughtsScreen extends ConsumerWidget {
   const ThoughtsScreen({super.key});
@@ -26,7 +26,7 @@ class ThoughtsScreen extends ConsumerWidget {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push(AppRoutes.newThought),
         icon: const Icon(Icons.edit_rounded),
-        label: const Text('New thought'),
+        label: Text(context.l10n.thoughtNew),
       ),
       body: DevotionalBackground(
         child: SafeArea(
@@ -34,7 +34,7 @@ class ThoughtsScreen extends ConsumerWidget {
             children: [
               Padding(
                 padding: const EdgeInsets.only(top: 12, bottom: 8),
-                child: Text('Thoughts & Reflections', style: theme.appBarTheme.titleTextStyle),
+                child: Text(context.l10n.thoughtsTitle, style: theme.appBarTheme.titleTextStyle),
               ),
               Expanded(
                 child: thoughts.isEmpty
@@ -65,6 +65,7 @@ class _ThoughtCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
     return SectionCard(
       padding: const EdgeInsets.all(16),
       onTap: () => context.push(AppRoutes.thought(thought.id)),
@@ -74,7 +75,7 @@ class _ThoughtCard extends StatelessWidget {
           Row(
             children: [
               Text(
-                DateFormat('d MMM yyyy, h:mm a').format(thought.createdAt),
+                l10n.formatDate('d MMM yyyy, h:mm a', thought.createdAt),
                 style: theme.textTheme.labelMedium?.copyWith(color: theme.colorScheme.tertiary),
               ),
               const Spacer(),
@@ -85,7 +86,7 @@ class _ThoughtCard extends StatelessWidget {
                     color: AppColors.gold.withValues(alpha: 0.18),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Text(thought.mood!.label, style: theme.textTheme.labelSmall),
+                  child: Text(l10n.moodLabel(thought.mood!), style: theme.textTheme.labelSmall),
                 ),
             ],
           ),
@@ -109,6 +110,7 @@ class _EmptyThoughts extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -117,10 +119,10 @@ class _EmptyThoughts extends StatelessWidget {
           children: [
             const DiyaGlow(size: 88),
             const SizedBox(height: 16),
-            Text('Your reflections live here', style: theme.textTheme.titleMedium),
+            Text(l10n.thoughtsEmptyTitle, style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
             Text(
-              'After your jaap, write or speak what you felt. Tap "New thought" to begin.',
+              l10n.thoughtsEmptyBody(l10n.thoughtNew),
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium,
             ),

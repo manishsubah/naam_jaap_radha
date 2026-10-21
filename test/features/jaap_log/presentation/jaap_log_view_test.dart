@@ -59,4 +59,29 @@ void main() {
     expect(find.text('408'), findsOneWidget);
     expect(jaap.items[JaapEntry.idFor(dateKey(today), 'radha')]!.count, 300);
   });
+
+  testWidgets('adds an external count on top of the existing one', (tester) async {
+    final today = dayOnly(DateTime.now());
+    final jaap = MemoryJaap([
+      JaapEntry(dateKey: dateKey(today), naamId: 'radha', count: 216, updatedAt: DateTime(2026)),
+    ]);
+    await _openLog(tester, jaap: jaap);
+    expect(find.text("Today's count"), findsOneWidget);
+
+    await tester.tap(find.text('216').first);
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('record-add-more')), '108');
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('record-add-more-button')));
+    await tester.pump();
+
+    final count = tester.widget<TextFormField>(find.byKey(const Key('record-count')));
+    expect(count.controller!.text, '324');
+    expect(tester.widget<TextField>(find.byKey(const Key('record-add-more'))).controller!.text, '');
+    expect(tester.widget<Text>(find.byKey(const Key('record-total'))).data, '324');
+
+    await tester.tap(find.text('Update record'));
+    await tester.pumpAndSettle();
+    expect(jaap.items[JaapEntry.idFor(dateKey(today), 'radha')]!.count, 324);
+  });
 }

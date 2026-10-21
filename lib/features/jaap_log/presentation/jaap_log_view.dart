@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
 import 'package:naam_jaap/core/theme/app_colors.dart';
 import 'package:naam_jaap/core/utils/date_keys.dart';
@@ -10,8 +9,7 @@ import 'package:naam_jaap/data/providers/providers.dart';
 import 'package:naam_jaap/data/sync/sync_controller.dart';
 import 'package:naam_jaap/features/jaap_log/domain/ledger.dart';
 import 'package:naam_jaap/features/jaap_log/presentation/widgets/jaap_record_sheet.dart';
-
-final _numbers = NumberFormat.decimalPattern('en_IN');
+import 'package:naam_jaap/l10n/l10n.dart';
 
 /// Every jaap record grouped by day, newest first. Each row shows the jaap
 /// name, the day's count, and that naam's running total up to that day.
@@ -44,7 +42,7 @@ class _JaapLogViewState extends ConsumerState<JaapLogView> {
           FilledButton.tonalIcon(
             onPressed: () => showJaapRecordSheet(context, naamId: _naamFilter),
             icon: const Icon(Icons.add_rounded),
-            label: const Text('Add record'),
+            label: Text(context.l10n.logAddRecord),
           ),
         ],
       ),
@@ -88,14 +86,14 @@ class _NaamFilter extends StatelessWidget {
       child: Row(
         children: [
           ChoiceChip(
-            label: const Text('All'),
+            label: Text(context.l10n.commonAll),
             selected: selected == null,
             onSelected: (_) => onSelected(null),
           ),
           for (final n in naams) ...[
             const SizedBox(width: 8),
             ChoiceChip(
-              label: Text(n.name),
+              label: Text(context.l10n.naamName(n)),
               selected: selected == n.id,
               onSelected: (_) => onSelected(n.id),
             ),
@@ -114,11 +112,12 @@ class _DayCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
     return SectionCard(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
-      title: DateFormat('EEE, d MMM yyyy').format(day.date),
+      title: l10n.formatDate('EEE, d MMM yyyy', day.date),
       trailing: day.rows.length > 1
-          ? Text('${_numbers.format(day.total)} jaap', style: theme.textTheme.labelLarge)
+          ? Text(l10n.jaapCount(l10n.numbers.format(day.total)), style: theme.textTheme.labelLarge)
           : null,
       child: Column(
         children: [
@@ -135,6 +134,7 @@ class _ColumnLabels extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final style = Theme.of(context).textTheme.labelSmall?.copyWith(
           color: Theme.of(context).colorScheme.onSurfaceVariant,
         );
@@ -142,9 +142,9 @@ class _ColumnLabels extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 4),
       child: Row(
         children: [
-          Expanded(child: Text('Jaap name', style: style)),
-          SizedBox(width: 76, child: Text('Daily', style: style, textAlign: TextAlign.end)),
-          SizedBox(width: 92, child: Text('Total', style: style, textAlign: TextAlign.end)),
+          Expanded(child: Text(l10n.jaapName, style: style)),
+          SizedBox(width: 96, child: Text(l10n.todaysCount, style: style, textAlign: TextAlign.end)),
+          SizedBox(width: 92, child: Text(l10n.commonTotal, style: style, textAlign: TextAlign.end)),
         ],
       ),
     );
@@ -160,13 +160,14 @@ class _LedgerRowTile extends ConsumerWidget {
     final entry = row.entry;
     final notifier = ref.read(jaapEntriesProvider.notifier);
     final messenger = ScaffoldMessenger.of(context);
+    final l10n = context.l10n;
     await notifier.setCount(entry.dateKey, entry.naamId, 0);
     messenger
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(
-        content: const Text('Record deleted'),
+        content: Text(l10n.logRecordDeleted),
         action: SnackBarAction(
-          label: 'Undo',
+          label: l10n.commonUndo,
           onPressed: () => notifier.setCount(entry.dateKey, entry.naamId, entry.count),
         ),
       ));
@@ -177,6 +178,7 @@ class _LedgerRowTile extends ConsumerWidget {
     final theme = Theme.of(context);
     final entry = row.entry;
     final naam = ref.watch(naamByIdProvider(entry.naamId));
+    final l10n = context.l10n;
 
     return Dismissible(
       key: ValueKey(entry.id),
@@ -206,15 +208,15 @@ class _LedgerRowTile extends ConsumerWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  naam?.name ?? 'Removed naam',
+                  naam == null ? l10n.removedNaam : l10n.naamName(naam),
                   style: theme.textTheme.titleSmall,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
               SizedBox(
-                width: 76,
+                width: 96,
                 child: Text(
-                  _numbers.format(entry.count),
+                  l10n.numbers.format(entry.count),
                   textAlign: TextAlign.end,
                   style: theme.textTheme.titleSmall,
                 ),
@@ -222,7 +224,7 @@ class _LedgerRowTile extends ConsumerWidget {
               SizedBox(
                 width: 92,
                 child: Text(
-                  _numbers.format(row.runningTotal),
+                  l10n.numbers.format(row.runningTotal),
                   textAlign: TextAlign.end,
                   style: theme.textTheme.titleSmall?.copyWith(
                     color: theme.colorScheme.primary,
@@ -250,10 +252,10 @@ class _EmptyLog extends StatelessWidget {
         children: [
           Icon(Icons.menu_book_rounded, size: 48, color: theme.colorScheme.primary),
           const SizedBox(height: 12),
-          Text('Start your jaap log', style: theme.textTheme.titleMedium),
+          Text(context.l10n.logEmptyTitle, style: theme.textTheme.titleMedium),
           const SizedBox(height: 4),
           Text(
-            'Each day you chant appears here with its count and your running total.',
+            context.l10n.logEmptyBody,
             style: theme.textTheme.bodyMedium,
             textAlign: TextAlign.center,
           ),
@@ -270,11 +272,12 @@ class _SyncBadge extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final sync = ref.watch(syncControllerProvider);
+    final l10n = context.l10n;
     final (icon, label) = switch (sync.status) {
-      SyncStatus.synced => (Icons.cloud_done_outlined, 'Saved to Google'),
-      SyncStatus.syncing || SyncStatus.connecting => (Icons.cloud_sync_outlined, 'Syncing…'),
-      SyncStatus.needsReconnect || SyncStatus.error => (Icons.cloud_off_outlined, 'Sync paused'),
-      SyncStatus.signedOut || SyncStatus.unavailable => (Icons.phone_iphone_rounded, 'On this device'),
+      SyncStatus.synced => (Icons.cloud_done_outlined, l10n.syncBadgeSaved),
+      SyncStatus.syncing || SyncStatus.connecting => (Icons.cloud_sync_outlined, l10n.syncBadgeSyncing),
+      SyncStatus.needsReconnect || SyncStatus.error => (Icons.cloud_off_outlined, l10n.syncBadgePaused),
+      SyncStatus.signedOut || SyncStatus.unavailable => (Icons.phone_iphone_rounded, l10n.syncBadgeOnDevice),
     };
     return Row(
       children: [

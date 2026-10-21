@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 
 import 'package:naam_jaap/app/router.dart';
 import 'package:naam_jaap/core/theme/app_colors.dart';
@@ -12,17 +11,7 @@ import 'package:naam_jaap/core/widgets/diya_glow.dart';
 import 'package:naam_jaap/core/widgets/goal_ring.dart';
 import 'package:naam_jaap/core/widgets/section_card.dart';
 import 'package:naam_jaap/data/providers/providers.dart';
-
-const _vachans = [
-  'Naam is the boat that carries us across the ocean of life.',
-  'Chant with love, and every bead becomes a prayer.',
-  'Where there is remembrance, there is peace.',
-  'One name, repeated with faith, can quiet a thousand thoughts.',
-  'Begin with one mala. Devotion grows with every bead.',
-  'The heart that remembers is never alone.',
-  'Kalijug keval naam adhara: in this age, the Name is our support.',
-  'Breathe in, breathe out, and let the Name fill the space between.',
-];
+import 'package:naam_jaap/l10n/l10n.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -30,6 +19,7 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
     final naam = ref.watch(selectedNaamProvider);
     final settings = ref.watch(settingsProvider);
     final today = ref.watch(todayTotalProvider);
@@ -39,7 +29,8 @@ class HomeScreen extends ConsumerWidget {
     final now = DateTime.now();
     final dayOfYear = now.difference(DateTime(now.year)).inDays;
     final accent = theme.brightness == Brightness.dark ? AppColors.lightGold : AppColors.maroon;
-    final numbers = NumberFormat.decimalPattern('en_IN');
+    final numbers = l10n.numbers;
+    final vachans = l10n.vachans;
 
     final sections = <Widget>[
       Row(
@@ -49,13 +40,13 @@ class HomeScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  naam.greeting,
+                  l10n.naamGreeting(naam),
                   style: AppFonts.heading(theme.textTheme.headlineMedium).copyWith(
                     color: accent,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                Text(DateFormat('EEEE, d MMMM').format(now), style: theme.textTheme.bodyMedium),
+                Text(l10n.formatDate('EEEE, d MMMM', now), style: theme.textTheme.bodyMedium),
               ],
             ),
           ),
@@ -77,7 +68,7 @@ class HomeScreen extends ConsumerWidget {
                       color: theme.colorScheme.primary,
                     ),
                   ),
-                  Text('of ${numbers.format(settings.dailyGoal)} today', style: theme.textTheme.bodySmall),
+                  Text(l10n.homeGoalProgress(numbers.format(settings.dailyGoal)), style: theme.textTheme.bodySmall),
                 ],
               ),
             ),
@@ -87,7 +78,7 @@ class HomeScreen extends ConsumerWidget {
               child: FilledButton.icon(
                 onPressed: () => context.go(AppRoutes.jaap),
                 icon: const Icon(Icons.blur_circular_rounded),
-                label: Text('Start ${naam.name} Jaap'),
+                label: Text(l10n.homeStartJaap(l10n.naamName(naam))),
               ),
             ),
           ],
@@ -99,8 +90,8 @@ class HomeScreen extends ConsumerWidget {
             child: _StatTile(
               icon: Icons.local_fire_department_rounded,
               color: AppColors.kesari,
-              value: '$streak',
-              label: streak == 1 ? 'day streak' : 'days streak',
+              value: numbers.format(streak),
+              label: l10n.homeStreak(streak),
             ),
           ),
           const SizedBox(width: 12),
@@ -108,8 +99,8 @@ class HomeScreen extends ConsumerWidget {
             child: _StatTile(
               icon: Icons.blur_circular_rounded,
               color: AppColors.gold,
-              value: '${today ~/ settings.malaSize}',
-              label: 'malas today',
+              value: numbers.format(today ~/ settings.malaSize),
+              label: l10n.homeMalasToday,
             ),
           ),
           const SizedBox(width: 12),
@@ -117,29 +108,29 @@ class HomeScreen extends ConsumerWidget {
             child: _StatTile(
               icon: Icons.all_inclusive_rounded,
               color: AppColors.maroon,
-              value: NumberFormat.compact(locale: 'en_IN').format(lifetime),
-              label: 'lifetime',
+              value: l10n.compactNumbers.format(lifetime),
+              label: l10n.homeLifetime,
             ),
           ),
         ],
       ),
       SectionCard(
-        title: 'Aaj ka vachan',
+        title: l10n.homeVachanTitle,
         child: Text(
-          _vachans[dayOfYear % _vachans.length],
+          vachans[dayOfYear % vachans.length],
           style: AppFonts.heading(theme.textTheme.titleMedium).copyWith(height: 1.5),
         ),
       ),
       SectionCard(
-        title: thoughts.isEmpty ? 'Capture a thought' : 'Latest thought',
+        title: thoughts.isEmpty ? l10n.homeCaptureThought : l10n.homeLatestThought,
         trailing: const Icon(Icons.chevron_right_rounded),
         onTap: () => thoughts.isEmpty
             ? context.push(AppRoutes.newThought)
             : context.go(AppRoutes.thoughts),
         child: Text(
           thoughts.isEmpty
-              ? 'Write or speak what is in your heart after your jaap.'
-              : (thoughts.first.text.isNotEmpty ? thoughts.first.text : 'Voice note'),
+              ? l10n.homeCaptureHint
+              : (thoughts.first.text.isNotEmpty ? thoughts.first.text : l10n.voiceNote),
           maxLines: 3,
           overflow: TextOverflow.ellipsis,
           style: theme.textTheme.bodyMedium,
@@ -180,7 +171,12 @@ class _StatTile extends StatelessWidget {
         children: [
           Icon(icon, color: color),
           const SizedBox(height: 6),
-          Text(value, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
+          // Scales down rather than wrapping, so long values like "4.52 लाख"
+          // keep the three tiles the same height.
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(value, maxLines: 1, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
+          ),
           Text(label, style: theme.textTheme.labelSmall, textAlign: TextAlign.center),
         ],
       ),

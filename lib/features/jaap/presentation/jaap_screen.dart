@@ -12,6 +12,7 @@ import 'package:naam_jaap/features/jaap/presentation/widgets/mala_painter.dart';
 import 'package:naam_jaap/features/jaap/domain/mala_progress.dart';
 import 'package:naam_jaap/features/jaap_log/presentation/widgets/jaap_record_sheet.dart';
 import 'package:naam_jaap/features/jaap/presentation/widgets/petal_burst.dart';
+import 'package:naam_jaap/l10n/l10n.dart';
 
 class JaapScreen extends ConsumerStatefulWidget {
   const JaapScreen({super.key});
@@ -53,7 +54,10 @@ class _JaapScreenState extends ConsumerState<JaapScreen> with SingleTickerProvid
         ..hideCurrentSnackBar()
         ..showSnackBar(SnackBar(
           behavior: SnackBarBehavior.floating,
-          content: Text('Mala ${progress.completedMalas} complete. ${naam.greeting}!'),
+          content: Text(context.l10n.jaapMalaComplete(
+            progress.completedMalas,
+            context.l10n.naamGreeting(naam),
+          )),
         ));
     } else {
       feedback.bead(vibrate: settings.vibrationEnabled);
@@ -69,6 +73,7 @@ class _JaapScreenState extends ConsumerState<JaapScreen> with SingleTickerProvid
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
     final naam = ref.watch(selectedNaamProvider);
     final malaSize = ref.watch(settingsProvider.select((s) => s.malaSize));
     final count = ref.watch(todayCountForNaamProvider(naam.id));
@@ -83,9 +88,9 @@ class _JaapScreenState extends ConsumerState<JaapScreen> with SingleTickerProvid
               padding: const EdgeInsets.fromLTRB(20, 12, 8, 0),
               child: Row(
                 children: [
-                  Expanded(child: Text('Naam Jaap', style: theme.appBarTheme.titleTextStyle)),
+                  Expanded(child: Text(l10n.jaapTitle, style: theme.appBarTheme.titleTextStyle)),
                   IconButton(
-                    tooltip: 'Add count manually',
+                    tooltip: l10n.jaapAddManually,
                     icon: const Icon(Icons.edit_note_rounded),
                     onPressed: () => showJaapRecordSheet(context, naamId: naam.id),
                   ),
@@ -125,13 +130,13 @@ class _JaapScreenState extends ConsumerState<JaapScreen> with SingleTickerProvid
               child: Row(
                 children: [
                   IconButton.filledTonal(
-                    tooltip: 'Undo last bead',
+                    tooltip: l10n.jaapUndo,
                     onPressed: count == 0 ? null : _undo,
                     icon: const Icon(Icons.undo_rounded),
                   ),
                   Expanded(
                     child: Text(
-                      'Tap anywhere on the mala to chant',
+                      l10n.jaapTapHint,
                       textAlign: TextAlign.center,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
@@ -139,7 +144,7 @@ class _JaapScreenState extends ConsumerState<JaapScreen> with SingleTickerProvid
                     ),
                   ),
                   IconButton.filledTonal(
-                    tooltip: 'Add count manually',
+                    tooltip: l10n.jaapAddManually,
                     onPressed: () => showJaapRecordSheet(context, naamId: naam.id),
                     icon: const Icon(Icons.add_rounded),
                   ),
@@ -162,6 +167,7 @@ class _MalaCenter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
     final accent = theme.brightness == Brightness.dark ? AppColors.lightGold : AppColors.maroon;
 
     return FractionallySizedBox(
@@ -189,7 +195,7 @@ class _MalaCenter extends StatelessWidget {
               .animate(key: ValueKey(progress.count))
               .scaleXY(begin: 1.18, end: 1, duration: 200.ms, curve: Curves.easeOut),
           Text(
-            'today',
+            l10n.commonToday,
             style: theme.textTheme.labelMedium?.copyWith(
               color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
             ),
@@ -202,7 +208,7 @@ class _MalaCenter extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
-              'Mala ${progress.completedMalas}  •  ${progress.beadsInCurrentMala}/${progress.malaSize}',
+              l10n.jaapMalaProgress(progress.completedMalas, progress.beadsInCurrentMala, progress.malaSize),
               style: theme.textTheme.labelLarge?.copyWith(color: accent, fontWeight: FontWeight.w600),
             ),
           ),
@@ -230,7 +236,7 @@ class _NaamSelector extends ConsumerWidget {
         itemBuilder: (context, i) {
           final naam = naams[i];
           return ChoiceChip(
-            label: Text(naam.name),
+            label: Text(context.l10n.naamName(naam)),
             selected: naam.id == selected.id,
             onSelected: (_) => ref
                 .read(settingsProvider.notifier)

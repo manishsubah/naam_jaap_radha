@@ -3,7 +3,6 @@ import 'dart:math' as math;
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 import 'package:naam_jaap/core/theme/app_colors.dart';
@@ -14,6 +13,7 @@ import 'package:naam_jaap/data/models/jaap_entry.dart';
 import 'package:naam_jaap/data/providers/providers.dart';
 import 'package:naam_jaap/features/jaap_log/presentation/jaap_log_view.dart';
 import 'package:naam_jaap/features/jaap_log/presentation/widgets/jaap_record_sheet.dart';
+import 'package:naam_jaap/l10n/l10n.dart';
 
 class HistoryScreen extends ConsumerStatefulWidget {
   const HistoryScreen({super.key});
@@ -32,28 +32,29 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
     final totals = ref.watch(dailyTotalsProvider);
     final goal = ref.watch(settingsProvider.select((s) => s.dailyGoal));
     final entries = ref.watch(jaapEntriesProvider);
     final selectedKey = dateKey(_selected);
     final dayEntries = entries.where((e) => e.dateKey == selectedKey).toList()
       ..sort((a, b) => b.count.compareTo(a.count));
-    final numbers = NumberFormat.decimalPattern('en_IN');
+    final numbers = l10n.numbers;
 
     final header = [
-      Center(child: Text('Sadhana History', style: theme.appBarTheme.titleTextStyle)),
+      Center(child: Text(l10n.historyTitle, style: theme.appBarTheme.titleTextStyle)),
       const SizedBox(height: 16),
       SegmentedButton<_HistoryView>(
-        segments: const [
+        segments: [
           ButtonSegment(
             value: _HistoryView.log,
-            icon: Icon(Icons.view_agenda_outlined),
-            label: Text('Log'),
+            icon: const Icon(Icons.view_agenda_outlined),
+            label: Text(l10n.historyLog),
           ),
           ButtonSegment(
             value: _HistoryView.calendar,
-            icon: Icon(Icons.calendar_month_outlined),
-            label: Text('Calendar'),
+            icon: const Icon(Icons.calendar_month_outlined),
+            label: Text(l10n.historyCalendar),
           ),
         ],
         selected: {_view},
@@ -79,7 +80,8 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                 lastDay: DateTime.now(),
                 focusedDay: _focused,
                 startingDayOfWeek: StartingDayOfWeek.monday,
-                availableCalendarFormats: const {CalendarFormat.month: 'Month'},
+                locale: l10n.localeName,
+                availableCalendarFormats: {CalendarFormat.month: l10n.historyMonth},
                 headerStyle: HeaderStyle(
                   titleCentered: true,
                   formatButtonVisible: false,
@@ -102,21 +104,21 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
             ),
             const SizedBox(height: 16),
             SectionCard(
-              title: DateFormat('d MMMM yyyy').format(_selected),
+              title: l10n.formatDate('d MMMM yyyy', _selected),
               trailing: IconButton(
-                tooltip: 'Add count for this day',
+                tooltip: l10n.historyAddForDay,
                 icon: const Icon(Icons.add_circle_outline_rounded),
                 onPressed: () => showJaapRecordSheet(context, date: _selected),
               ),
               child: dayEntries.isEmpty
-                  ? Text('No jaap recorded on this day.', style: theme.textTheme.bodyMedium)
+                  ? Text(l10n.historyNoJaap, style: theme.textTheme.bodyMedium)
                   : Column(
                       children: [
                         for (final e in dayEntries) _EntryTile(entry: e),
                         const Divider(),
                         Row(
                           children: [
-                            Text('Total', style: theme.textTheme.titleSmall),
+                            Text(l10n.commonTotal, style: theme.textTheme.titleSmall),
                             const Spacer(),
                             Text(
                               numbers.format(totals[selectedKey] ?? 0),
@@ -128,9 +130,9 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                     ),
             ),
             const SizedBox(height: 16),
-            SectionCard(title: 'Last 7 days', child: _WeekChart(totals: totals)),
+            SectionCard(title: l10n.historyLast7Days, child: _WeekChart(totals: totals)),
             const SizedBox(height: 16),
-            const SectionCard(title: 'Naam totals', child: _NaamTotals()),
+            SectionCard(title: l10n.historyNaamTotals, child: const _NaamTotals()),
           ],
         ),
       ),
@@ -193,6 +195,7 @@ class _EntryTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final naam = ref.watch(naamByIdProvider(entry.naamId));
     final malaSize = ref.watch(settingsProvider.select((s) => s.malaSize));
+    final l10n = context.l10n;
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: CircleAvatar(
@@ -202,8 +205,8 @@ class _EntryTile extends ConsumerWidget {
           style: const TextStyle(color: AppColors.maroon, fontWeight: FontWeight.w700),
         ),
       ),
-      title: Text(naam?.name ?? 'Removed naam'),
-      subtitle: Text('${entry.count} jaap  •  ${entry.count ~/ malaSize} malas'),
+      title: Text(naam == null ? l10n.removedNaam : l10n.naamName(naam)),
+      subtitle: Text(l10n.historyEntrySummary(l10n.numbers.format(entry.count), entry.count ~/ malaSize)),
       trailing: const Icon(Icons.edit_outlined),
       onTap: () => showJaapRecordSheet(
         context,
@@ -238,7 +241,7 @@ class _WeekChart extends StatelessWidget {
             touchTooltipData: BarTouchTooltipData(
               getTooltipColor: (_) => AppColors.maroon,
               getTooltipItem: (group, _, rod, _) => BarTooltipItem(
-                '${rod.toY.toInt()}',
+                context.l10n.numbers.format(rod.toY.toInt()),
                 const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
               ),
             ),
@@ -253,7 +256,7 @@ class _WeekChart extends StatelessWidget {
                 getTitlesWidget: (value, meta) => SideTitleWidget(
                   meta: meta,
                   child: Text(
-                    DateFormat('E').format(days[value.toInt()]),
+                    context.l10n.formatDate('E', days[value.toInt()]),
                     style: theme.textTheme.labelSmall,
                   ),
                 ),
@@ -292,11 +295,12 @@ class _NaamTotals extends ConsumerWidget {
     final theme = Theme.of(context);
     final totals = ref.watch(naamTotalsProvider);
     final naams = ref.watch(naamsProvider);
-    final numbers = NumberFormat.decimalPattern('en_IN');
+    final l10n = context.l10n;
+    final numbers = l10n.numbers;
     final rows = totals.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
 
     if (rows.isEmpty) {
-      return Text('Your naam totals will appear here.', style: theme.textTheme.bodyMedium);
+      return Text(l10n.historyNaamTotalsEmpty, style: theme.textTheme.bodyMedium);
     }
     final max = rows.first.value;
 
@@ -311,7 +315,10 @@ class _NaamTotals extends ConsumerWidget {
                 Row(
                   children: [
                     Text(
-                      naams.where((n) => n.id == row.key).firstOrNull?.name ?? 'Removed naam',
+                      switch (naams.where((n) => n.id == row.key).firstOrNull) {
+                        final naam? => l10n.naamName(naam),
+                        null => l10n.removedNaam,
+                      },
                       style: theme.textTheme.titleSmall,
                     ),
                     const Spacer(),

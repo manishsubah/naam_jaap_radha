@@ -1,13 +1,4 @@
-enum ThoughtMood {
-  peaceful('Peaceful'),
-  grateful('Grateful'),
-  devoted('Devoted'),
-  joyful('Joyful'),
-  seeking('Seeking');
-
-  const ThoughtMood(this.label);
-  final String label;
-}
+enum ThoughtMood { peaceful, grateful, devoted, joyful, seeking }
 
 class Thought {
   const Thought({

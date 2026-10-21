@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
 import 'package:naam_jaap/core/theme/app_colors.dart';
 import 'package:naam_jaap/core/widgets/devotional_background.dart';
@@ -12,6 +11,7 @@ import 'package:naam_jaap/data/providers/providers.dart';
 import 'package:naam_jaap/core/services/audio_recorder_service.dart';
 import 'package:naam_jaap/core/services/speech_service.dart';
 import 'package:naam_jaap/features/thoughts/presentation/widgets/audio_player_tile.dart';
+import 'package:naam_jaap/l10n/l10n.dart';
 
 class ThoughtEditorScreen extends ConsumerStatefulWidget {
   const ThoughtEditorScreen({super.key, this.thoughtId});
@@ -97,7 +97,7 @@ class _ThoughtEditorScreenState extends ConsumerState<ThoughtEditorScreen> {
     );
     if (!mounted) return;
     if (!started) {
-      _toast('Speech recognition is not available. Please allow microphone and speech access.');
+      _toast(context.l10n.thoughtSpeechUnavailable);
       return;
     }
     setState(() => _listening = true);
@@ -116,7 +116,7 @@ class _ThoughtEditorScreenState extends ConsumerState<ThoughtEditorScreen> {
     final started = await _recorder.start();
     if (!mounted) return;
     if (!started) {
-      _toast('Microphone permission is needed to record a voice note.');
+      _toast(context.l10n.thoughtMicNeeded);
       return;
     }
     _recordWatch
@@ -155,7 +155,7 @@ class _ThoughtEditorScreenState extends ConsumerState<ThoughtEditorScreen> {
 
     final text = _text.text.trim();
     if (text.isEmpty && _audioPath == null) {
-      _toast('Write, speak, or record something first.');
+      if (mounted) _toast(context.l10n.thoughtEmpty);
       return;
     }
 
@@ -175,14 +175,15 @@ class _ThoughtEditorScreenState extends ConsumerState<ThoughtEditorScreen> {
   }
 
   Future<void> _delete() async {
+    final l10n = context.l10n;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete this thought?'),
-        content: const Text('The text and any voice note will be removed.'),
+        title: Text(l10n.thoughtDeleteTitle),
+        content: Text(l10n.thoughtDeleteBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Delete')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l10n.commonCancel)),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(l10n.commonDelete)),
         ],
       ),
     );
@@ -196,16 +197,17 @@ class _ThoughtEditorScreenState extends ConsumerState<ThoughtEditorScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final localeLabel = {'hi_IN': 'Hindi', 'en_IN': 'English'}[ref.watch(settingsProvider).speechLocale];
+    final l10n = context.l10n;
+    final localeLabel = l10n.speechLanguageName(ref.watch(settingsProvider).speechLocale);
 
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: Text(_existing == null ? 'New thought' : 'Edit thought'),
+        title: Text(_existing == null ? l10n.thoughtNew : l10n.thoughtEdit),
         actions: [
           if (_existing != null)
-            IconButton(tooltip: 'Delete', onPressed: _delete, icon: const Icon(Icons.delete_outline_rounded)),
-          IconButton(tooltip: 'Save', onPressed: _save, icon: const Icon(Icons.check_rounded)),
+            IconButton(tooltip: l10n.commonDelete, onPressed: _delete, icon: const Icon(Icons.delete_outline_rounded)),
+          IconButton(tooltip: l10n.commonSave, onPressed: _save, icon: const Icon(Icons.check_rounded)),
         ],
       ),
       body: DevotionalBackground(
@@ -214,7 +216,7 @@ class _ThoughtEditorScreenState extends ConsumerState<ThoughtEditorScreen> {
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
             children: [
               Text(
-                DateFormat('EEEE, d MMMM yyyy').format(_existing?.createdAt ?? DateTime.now()),
+                l10n.formatDate('EEEE, d MMMM yyyy', _existing?.createdAt ?? DateTime.now()),
                 style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.tertiary),
               ),
               const SizedBox(height: 12),
@@ -224,7 +226,7 @@ class _ThoughtEditorScreenState extends ConsumerState<ThoughtEditorScreen> {
                 children: [
                   for (final mood in ThoughtMood.values)
                     ChoiceChip(
-                      label: Text(mood.label),
+                      label: Text(l10n.moodLabel(mood)),
                       selected: _mood == mood,
                       onSelected: (on) => setState(() => _mood = on ? mood : null),
                     ),
@@ -236,15 +238,13 @@ class _ThoughtEditorScreenState extends ConsumerState<ThoughtEditorScreen> {
                 minLines: 8,
                 maxLines: null,
                 textCapitalization: TextCapitalization.sentences,
-                decoration: const InputDecoration(
-                  hintText: 'What did you feel during your jaap today?',
-                ),
+                decoration: InputDecoration(hintText: l10n.thoughtHint),
               ),
               if (_listening) ...[
                 const SizedBox(height: 12),
                 _LiveBanner(
                   icon: Icons.graphic_eq_rounded,
-                  label: 'Listening in $localeLabel... speak now',
+                  label: l10n.thoughtListening(localeLabel),
                 ),
               ],
               if (_recording) ...[
@@ -252,7 +252,7 @@ class _ThoughtEditorScreenState extends ConsumerState<ThoughtEditorScreen> {
                 _LiveBanner(
                   icon: Icons.fiber_manual_record_rounded,
                   color: Colors.red,
-                  label: 'Recording voice note  ${formatDuration(_recordWatch.elapsed)}',
+                  label: l10n.thoughtRecording(formatDuration(_recordWatch.elapsed)),
                 ),
               ],
               if (_audioPath != null && !_recording) ...[
@@ -266,7 +266,7 @@ class _ThoughtEditorScreenState extends ConsumerState<ThoughtEditorScreen> {
                     child: _VoiceButton(
                       active: _listening,
                       icon: _listening ? Icons.stop_rounded : Icons.keyboard_voice_rounded,
-                      label: _listening ? 'Stop' : 'Speak to write',
+                      label: _listening ? l10n.commonStop : l10n.thoughtSpeakToWrite,
                       onPressed: _toggleSpeech,
                     ),
                   ),
@@ -275,7 +275,7 @@ class _ThoughtEditorScreenState extends ConsumerState<ThoughtEditorScreen> {
                     child: _VoiceButton(
                       active: _recording,
                       icon: _recording ? Icons.stop_rounded : Icons.mic_rounded,
-                      label: _recording ? 'Stop recording' : 'Record voice',
+                      label: _recording ? l10n.thoughtStopRecording : l10n.thoughtRecordVoice,
                       onPressed: _toggleRecording,
                     ),
                   ),
@@ -283,7 +283,7 @@ class _ThoughtEditorScreenState extends ConsumerState<ThoughtEditorScreen> {
               ),
               const SizedBox(height: 12),
               Text(
-                'Speak to write turns your words into text. Record voice saves your own voice as a note.',
+                l10n.thoughtVoiceHelp,
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
@@ -293,7 +293,7 @@ class _ThoughtEditorScreenState extends ConsumerState<ThoughtEditorScreen> {
               FilledButton.icon(
                 onPressed: _save,
                 icon: const Icon(Icons.favorite_rounded),
-                label: const Text('Save thought'),
+                label: Text(l10n.thoughtSave),
               ),
             ],
           ),
